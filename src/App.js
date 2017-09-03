@@ -1,4 +1,5 @@
 import React from 'react';
+import shallowElementEquals from 'shallow-element-equals';
 
 class HOCChildContent extends React.Component {
     static get propTypes() {
@@ -55,12 +56,13 @@ class HOCParent extends React.Component {
 
     shouldComponentUpdate(nextProps) {
         console.log(`HOCParent[${this.props.name}]:shouldComponentUpdate`);
-        const currData = this.props.data;
-        const currName = this.props.name;
-        const nextData = nextProps.data;
-        const nextName = nextProps.name;
-        if (nextName !== currName) { return true; }
-        if (nextData[nextName] !== currData[currName]) { return true; }
+        if (
+            nextProps.name !== this.props.name ||
+            nextProps.data[nextProps.name] !== this.props.data[this.props.name] ||
+            !shallowElementEquals(nextProps, this.props)  // shallow compare children
+        ) {
+            return true;
+        }
         return false;
     }
 
@@ -119,7 +121,7 @@ class App extends React.Component {
         const { parentName, childName, inheritable, uninheritable } = this.state;
         return (
             <div>
-                <div style={{ color: 'white', backgroundColor: 'steelblue' }}>
+                <div style={{ padding: '10px', color: 'white', backgroundColor: 'steelblue' }}>
                     <button type="button" onClick={this.onChangeParentName}>
                         Parent: {parentName}
                     </button>
@@ -133,7 +135,7 @@ class App extends React.Component {
                         Uninheritable: {uninheritable}
                     </button>
                 </div>
-                <div style={{ marginTop: '20px' }}>
+                <div style={{ marginTop: '20px', padding: '10px' }}>
                     <HOCParent name={parentName} data={{ [parentName]: childName }}>
                         <HOCChild name="child1">
                             <div>
