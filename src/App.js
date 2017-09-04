@@ -56,13 +56,22 @@ class HOCParent extends React.Component {
 
     shouldComponentUpdate(nextProps) {
         console.log(`HOCParent[${this.props.name}]:shouldComponentUpdate`);
-        if (
-            nextProps.name !== this.props.name ||
-            nextProps.data[nextProps.name] !== this.props.data[this.props.name] ||
-            !shallowElementEquals(nextProps, this.props)  // shallow compare children
-        ) {
+        // name
+        if (nextProps.name !== this.props.name) {
+            console.log(`HOCParent[${this.props.name}]:shouldComponentUpdate:name`);
             return true;
         }
+        // data[name]
+        if (nextProps.data[nextProps.name] !== this.props.data[this.props.name]) {
+            console.log(`HOCParent[${this.props.name}]:shouldComponentUpdate:data[name]`);
+            return true;
+        }
+        // shallow compare children
+        if (!shallowElementEquals(nextProps, this.props)) {
+            console.log(`HOCParent[${this.props.name}]:shouldComponentUpdate:children`);
+            return true;
+        }
+        // ...
         return false;
     }
 
@@ -89,8 +98,7 @@ class App extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            parentName: 'parent1',
-            childName: 'child1',
+            data: { parent1: 'child1' },
             inheritable: Date.now(),
             uninheritable: Date.now(),
         };
@@ -101,11 +109,19 @@ class App extends React.Component {
     }
 
     onChangeParentName() {
-        this.setState({ parentName: this.state.parentName === 'parent1' ? 'parent2' : 'parent1' });
+        const { data } = this.state;
+        const oldParentName = Object.keys(data)[0];
+        const oldChildName = data[oldParentName];
+        const newParentName = (oldParentName === 'parent1') ? 'parent2' : 'parent1';
+        this.setState({ data: { [newParentName]: oldChildName } });
     }
 
     onChangeChildName() {
-        this.setState({ childName: this.state.childName === 'child1' ? 'child2' : 'child1' });
+        const { data } = this.state;
+        const oldParentName = Object.keys(data)[0];
+        const oldChildName = data[oldParentName];
+        const newChildName = (oldChildName === 'child1') ? 'child2' : 'child1';
+        this.setState({ data: { [oldParentName]: newChildName } });
     }
 
     onChangeInheritable() {
@@ -118,7 +134,9 @@ class App extends React.Component {
 
     render() {
         console.log('App:render');
-        const { parentName, childName, inheritable, uninheritable } = this.state;
+        const { data, inheritable, uninheritable } = this.state;
+        const parentName = Object.keys(data)[0];
+        const childName = data[parentName];
         return (
             <div>
                 <div style={{ padding: '10px', color: 'white', backgroundColor: 'steelblue' }}>
@@ -136,7 +154,7 @@ class App extends React.Component {
                     </button>
                 </div>
                 <div style={{ marginTop: '20px', padding: '10px' }}>
-                    <HOCParent name={parentName} data={{ [parentName]: childName }}>
+                    <HOCParent name={parentName} data={data}>
                         <HOCChild name="child1">
                             <div>
                                 <span>child1</span>
