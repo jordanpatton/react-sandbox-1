@@ -67,7 +67,7 @@ class HOCParent extends React.Component {
             return true;
         }
         // shallow compare children
-        if (!shallowElementEquals(nextProps, this.props)) {
+        if (!shallowElementEquals({ children: nextProps.children }, { children: this.props.children })) {
             console.log(`HOCParent[${this.props.name}]:shouldComponentUpdate:children`);
             return true;
         }
